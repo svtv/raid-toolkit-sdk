@@ -9,15 +9,28 @@ using Extractor = RaidExtractor.Core.Extractor;
 
 namespace Raid.Service
 {
-    internal class AccountApi : ApiHandler, IAccountApi
+    internal class AccountApi : ApiHandler<IAccountApi>, IAccountApi
     {
         private readonly StaticDataCache StaticDataCache;
         private readonly UserData UserData;
         private readonly Extractor Extractor;
-        public AccountApi(ILogger<ApiHandler> logger, UserData userData, StaticDataCache staticData, Extractor extractor)
+        public AccountApi(
+            ILogger<AccountApi> logger,
+            UserData userData,
+            StaticDataCache staticData,
+            Extractor extractor,
+            EventService eventService)
             : base(logger)
         {
-            (UserData, StaticDataCache, Extractor) = (userData, staticData, extractor);
+            UserData = userData;
+            StaticDataCache = staticData;
+            Extractor = extractor;
+            eventService.OnAccountUpdated += OnAccountUpdated;
+        }
+
+        private void OnAccountUpdated(object sender, AccountUpdatedEventArgs e)
+        {
+            Updated?.Invoke(this, e);
         }
 
         [PublicApi("updated")]

@@ -21,6 +21,7 @@ namespace Raid.Service
         private readonly UpdateService UpdateService;
         private readonly IServiceProvider ServiceProvider;
         private readonly SessionFactory SessionFactory;
+        private readonly ErrorService ErrorService;
 
         private DateTime ActiveUntil = DateTime.UtcNow;
 
@@ -33,7 +34,8 @@ namespace Raid.Service
             IHostApplicationLifetime appLifetime,
             IOptions<AppSettings> settings,
             MemoryLogger memoryLogger,
-            ISessionFactory sessionFactory)
+            ISessionFactory sessionFactory,
+            ErrorService errorService)
         {
             Factory = factory;
             Logger = logger;
@@ -42,6 +44,7 @@ namespace Raid.Service
             ServiceProvider = serviceProvider;
             DataSettings = settings.Value.DataSettings;
             SessionFactory = sessionFactory as SessionFactory;
+            ErrorService = errorService;
             processWatcher.ProcessFound += OnProcessFound;
             processWatcher.ProcessClosed += OnProcessClosed;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
@@ -50,13 +53,31 @@ namespace Raid.Service
 
         private void OnProcessFound(object sender, ProcessWatcherService.ProcessWatcherEventArgs e)
         {
+            using TrackedOperation createInstanceOp = ErrorService.TrackOperation(ServiceErrorCategory.Process, e.Id.ToString(), e.Id);
             try
             {
-                Factory.Create(e.Process, ServiceProvider.CreateScope());
+                _ = Factory.Create(e.Process, ServiceProvider.CreateScope());
+                ErrorService.ClearError(ServiceErrorCategory.Process, e.Id.ToString());
+            }
+            catch (System.ComponentModel.Win32Exception ex)
+            {
+                if (ex.NativeErrorCode == 5) // access denied
+                {
+                    createInstanceOp.Fail(ServiceError.ProcessAccessDenied);
+                    Logger.LogError(ServiceError.ProcessAccessDenied.EventId(), ex, "Process cannot be accessed, is it running as administrator?");
+                    e.Retry = false;
+                }
+                else
+                {
+                    createInstanceOp.Fail(ServiceError.AccountNotReady, 5);
+                    Logger.LogError(ServiceError.AccountNotReady.EventId(), ex, "Account is not ready");
+                    e.Retry = true;
+                }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ServiceError.AccoutNotReady.EventId(), ex, "Account is not ready");
+                createInstanceOp.Fail(ServiceError.AccountNotReady, 5);
+                Logger.LogError(ServiceError.AccountNotReady.EventId(), ex, "Account is not ready");
                 e.Retry = true;
             }
         }
@@ -69,7 +90,7 @@ namespace Raid.Service
             }
             catch (Exception ex)
             {
-                Logger.LogError(ServiceError.AccoutNotReady.EventId(), ex, "Failed to dispose account instance");
+                Logger.LogError(ServiceError.AccountNotReady.EventId(), ex, "Failed to dispose account instance");
             }
         }
 
@@ -95,9 +116,9 @@ namespace Raid.Service
         public void Run(RunOptions options)
         {
             Console.CancelKeyPress += (sender, e) => Application.Exit();
-            TaskExtensions.RunAfter(1, UpdateAccounts);
+            _ = TaskExtensions.RunAfter(1, UpdateAccounts);
 
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            _ = Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.Run(ServiceProvider.GetRequiredService<UI.MainWindow>());
         }
 
@@ -107,7 +128,7 @@ namespace Raid.Service
             if (postUpdate)
                 args.Add("--post-update");
 
-            Process.Start(AppConfiguration.ExecutablePath, args.ToArray());
+            _ = Process.Start(AppConfiguration.ExecutablePath, args.ToArray());
             Exit();
         }
 
@@ -160,7 +181,7 @@ namespace Raid.Service
             }
 
             Logger.LogDebug($"Scheduling next update in {nextDelay}ms (active={isActive};until={ActiveUntil:o})");
-            TaskExtensions.RunAfter(nextDelay, UpdateAccounts);
+            _ = TaskExtensions.RunAfter(nextDelay, UpdateAccounts);
         }
     }
 }
