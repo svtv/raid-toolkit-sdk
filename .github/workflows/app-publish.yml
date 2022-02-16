@@ -6,11 +6,12 @@ on:
       - main
       - release/**
     paths:
+      - version.json
       - .github/workflows/app-publish.yml
-      - 'SDK/**'
+      - 'SDK/Client/DotNet/**'
+      - 'SDK/Shared/**'
+      - 'SDK/Service/**'
       - '!**/*.md'
-      - '!SDK/Python/**'
-      - '!SDK/WebClient/**'
 
 jobs:
   build:
@@ -20,9 +21,8 @@ jobs:
     env:
       IS_CI: true
       Solution_Name: SDK.sln
-      Service_csproj: SDK\Service\Service.csproj
-      Extractor_csproj: SDK\Extractor\Extractor.csproj
-      Client_csproj: SDK\Client\Client.csproj
+      Service_csproj: SDK\Service\Application\Service.csproj
+      Client_csproj: SDK\Client\DotNet\Raid.Client.csproj
 
     steps:
       - name: Checkout
