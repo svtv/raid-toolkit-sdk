@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net472;net5.0-windows</TargetFrameworks>
+        <TargetFrameworks>net472;net5.0-windows;net6.0-windows</TargetFrameworks>
         <LangVersion>10.0</LangVersion>
         <developmentDependency>true</developmentDependency>
         <NoPackageAnalysis>true</NoPackageAnalysis>
@@ -10,21 +10,22 @@
         <AssemblyName>Raid.Toolkit.Extensibility.Tasks</AssemblyName>
         <RootNamespace>Raid.Toolkit.Extensibility.Tasks</RootNamespace>
         <Nullable>enable</Nullable>
+        <Platforms>x64</Platforms>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Build.Tasks.Core"
             Version="17.1.0" />
         <PackageReference Include="il2cpptoolkit.common"
-            Version="1.0.65" />
+            Version="2.0.48-alpha" />
         <PackageReference Include="il2cpptoolkit.metadata"
-            Version="1.0.65" />
+            Version="2.0.48-alpha" />
         <PackageReference Include="il2cpptoolkit.reversecompiler"
-            Version="1.0.65" />
+            Version="2.0.48-alpha" />
         <PackageReference Include="il2cpptoolkit.runtime"
-            Version="1.0.65" />
+            Version="2.0.48-alpha" />
         <PackageReference Include="il2cpptoolkit.target.netcore"
-            Version="1.0.65" />
+            Version="2.0.48-alpha" />
         <PackageReference Include="Microsoft.Win32.Registry"
             Version="5.0.0" />
         <PackageReference Include="MSBuildTasks"
@@ -68,10 +69,6 @@
             <PackagePath>build\MSBuild\</PackagePath>
         </None>
         <None Include="$(OutputPath)\..\net472\Il2CppToolkit.Target.NetCore.dll">
-            <Pack>true</Pack>
-            <PackagePath>build\MSBuild\</PackagePath>
-        </None>
-        <None Include="$(OutputPath)\..\net472\Lokad.ILPack.dll">
             <Pack>true</Pack>
             <PackagePath>build\MSBuild\</PackagePath>
         </None>
@@ -216,10 +213,6 @@
             <PackagePath>build\MSBuildCore\</PackagePath>
         </None>
         <None Include="$(OutputPath)\..\net5.0-windows\Il2CppToolkit.Target.NetCore.dll">
-            <Pack>true</Pack>
-            <PackagePath>build\MSBuildCore\</PackagePath>
-        </None>
-        <None Include="$(OutputPath)\..\net5.0-windows\Lokad.ILPack.dll">
             <Pack>true</Pack>
             <PackagePath>build\MSBuildCore\</PackagePath>
         </None>

@@ -1,9 +1,7 @@
-using Client.Model;
-using Il2CppToolkit.Runtime;
-using Raid.Toolkit.Common;
-using Raid.Toolkit.Injection;
 using System;
 using System.Diagnostics;
+using Client.Model;
+using Il2CppToolkit.Runtime;
 
 namespace Raid.Toolkit.Extensibility.Host
 {
@@ -13,7 +11,6 @@ namespace Raid.Toolkit.Extensibility.Host
         public string Id { get; }
         private readonly string AccountName;
         private bool IsDisposed;
-        private ProcessHook Hook;
 
         public Il2CsRuntimeContext Runtime { get; }
         public PropertyBag Properties { get; } = new();
@@ -22,18 +19,12 @@ namespace Raid.Toolkit.Extensibility.Host
         {
             Token = proc.Id;
             Runtime = new(proc);
-            if (RegistrySettings.IsFlagEnabled(FeatureFlags.Hooks, true))
-            {
-                Hook = new(proc.Id);
-            }
             (Id, AccountName) = GetAccountIdAndName();
         }
 
         private (string, string) GetAccountIdAndName()
         {
-            var appModel = Client.App.SingleInstance<AppModel>.method_get_Instance
-                        .GetMethodInfo(Runtime).DeclaringClass.StaticFields
-                        .As<SingleInstanceStaticFields<AppModel>>().Instance;
+            var appModel = Client.App.SingleInstance<AppModel>._instance.GetValue(Runtime);
 
             var userWrapper = appModel._userWrapper;
             var socialWrapper = userWrapper.Social.SocialData;
@@ -49,7 +40,6 @@ namespace Raid.Toolkit.Extensibility.Host
                 if (disposing)
                 {
                     Runtime?.Dispose();
-                    Hook?.Dispose();
                 }
                 IsDisposed = true;
             }

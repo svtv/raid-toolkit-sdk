@@ -5,7 +5,6 @@ using System.Linq;
 using Raid.Toolkit.Common;
 using Raid.Toolkit.Extensibility;
 using Raid.Toolkit.Extensibility.Host;
-using Raid.Toolkit.Injection;
 
 namespace Raid.Toolkit
 {
@@ -26,8 +25,10 @@ namespace Raid.Toolkit
         {
             if (IsLoaded)
                 return;
-            // let's get fucky
-            ClientApi.Preload();
+
+            // preload injection client type/asm before extensions get loaded
+            typeof(Il2CppToolkit.Injection.Client.InjectionClient).FullName?.ToString();
+            // let's get fucky. 
             Load();
             IsLoaded = true;
         }

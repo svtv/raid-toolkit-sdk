@@ -1,0 +1,20 @@
+{
+  "name": "raid-toolkit-sdk",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/raid-toolkit/raid-toolkit-sdk.git",
+  "author": "Daniel Chattan <dnchattan@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bump-nuget-versions": "node scripts/bump-nuget-versions.js"
+  },
+  "dependencies": {
+    "chalk": "^5.0.1",
+    "cli-spinners": "^2.6.1",
+    "node-fetch": "^3.2.6",
+    "rimraf": "^3.0.2",
+    "semver": "^7.3.7"
+  }
+}
