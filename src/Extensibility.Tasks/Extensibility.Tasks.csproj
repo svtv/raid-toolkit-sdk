@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
+        <LangVersion>10.0</LangVersion>
+        <developmentDependency>true</developmentDependency>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <AssemblyName>Raid.Toolkit.Extensibility.Tasks</AssemblyName>
+        <RootNamespace>Raid.Toolkit.Extensibility.Tasks</RootNamespace>
+        <Nullable>enable</Nullable>
+        <Platforms>x64</Platforms>
+        <NBGV_ThisAssemblyNamespace>$(RootNamespace)</NBGV_ThisAssemblyNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Build.Tasks\Tasks.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="build\**">
+            <Pack>true</Pack>
+            <PackagePath>build\</PackagePath>
+        </None>
+        <None Include="buildCrossTargeting\**">
+            <Pack>true</Pack>
+            <PackagePath>buildCrossTargeting\</PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

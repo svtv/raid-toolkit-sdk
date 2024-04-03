@@ -1,0 +1,111 @@
+name: Buddy Build
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      IS_CI: true
+      Solution_Name: SDK-CI.sln
+      Launcher_csproj: src\Application\Launcher\Launcher.csproj
+      App_csproj: src\Application\Raid.Toolkit\Raid.Toolkit.csproj
+      Client_csproj: src\ClientSDK\DotNet\Raid.Client.csproj
+
+    steps:
+      - uses: mickem/clean-after-action@v1
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set branch-based environment variables
+        uses: iamtheyammer/branch-env-vars@v1.0.4
+        with:
+          PRERELEASE: |
+            main:true
+            !default:false
+          PRERELEASEN: |
+            main:1
+            !default:0
+
+      # Install the .NET Core workload
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: |
+            6.0.x
+            7.0.x
+
+      # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      # Versions
+      - uses: dotnet/nbgv@master
+        id: rtk_version
+        with:
+          setAllVars: true
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # Restore the application to populate the obj folder with RuntimeIdentifiers
+      - name: Restore the application
+        run: dotnet restore $env:Solution_Name
+
+      # Build
+      - name: Build App
+        run: dotnet build $env:Solution_Name -c Debug -p:PackageOutputPath="$(Get-Location)\publish\nuget"
+
+      # Pack
+      - name: Pack Dependencies
+        run: dotnet pack $env:Solution_Name -c Debug --include-symbols --include-source --no-build -p:PackageOutputPath="$(Get-Location)\publish\nuget"
+
+      - name: Build Setup
+        run: |
+          $env:Path += ";C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          heat.exe dir $env:BuildOutputDirectory -cg RaidToolkitBinaries -out out\RaidToolkitBinaries.wxs -dr BINDIR -srd -suid -sreg -g1 -var env.BuildOutputDirectory -ag
+          candle.exe -nologo -o out\ out\RaidToolkitBinaries.wxs Product.wxs Registry.wxs Bundle.wxs -ext WixBalExtension
+          light.exe -nologo -o out\RaidToolkit.msi out\Product.wixobj out\Registry.wixobj out\RaidToolkitBinaries.wixobj -ext WixBalExtension
+          light.exe -nologo -o out\RaidToolkitSetup.exe out\Bundle.wixobj -ext WixBalExtension
+        working-directory: ./src/Setup
+        env:
+          AppVersion: ${{ steps.rtk_version.outputs.Version }}
+          Prerelease: ${{ env.PRERELEASEN }}
+          BuildOutputDirectory: ..\Application\Raid.Toolkit\bin\x64\Debug\net6.0-windows10.0.19041.0\win10-x64
+
+      - name: Release to staging
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.rtk_version.outputs.Version }}
+          prerelease: true
+          token: ${{ secrets.RELEASE_STAGING_GITHUB }}
+          repository: raid-toolkit/staged-release
+          files: |
+            UPGRADE_3.0.md
+            src/Setup/out/RaidToolkitSetup.exe
+            ThirdPartyNotice.txt
+
+      # NuGet Push
+      - name: Push client package to PR registry
+        run: |
+          dotnet nuget push publish/nuget/Raid.Toolkit.Common.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+          dotnet nuget push publish/nuget/Raid.Toolkit.Extensibility.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+          dotnet nuget push publish/nuget/Raid.Toolkit.Extensibility.Host.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+          dotnet nuget push publish/nuget/Raid.Toolkit.Extensibility.Tasks.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+          dotnet nuget push publish/nuget/Raid.Toolkit.Loader.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+          dotnet nuget push publish/nuget/Raid.Toolkit.Build.Tasks.${{ steps.rtk_version.outputs.NuGetPackageVersion }}.nupkg -k $env:STAGING_NUGET_TOKEN -s $env:STAGING_NUGET_URL --skip-duplicate
+        env:
+          STAGING_NUGET_TOKEN: ${{ secrets.STAGING_NUGET_TOKEN }}
+          STAGING_NUGET_URL: https://nuget.pkg.github.com/raid-toolkit/index.json

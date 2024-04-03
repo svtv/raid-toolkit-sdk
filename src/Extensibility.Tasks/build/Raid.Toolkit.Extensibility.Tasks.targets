@@ -1,0 +1,5 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="RTK_DeprecationWarning">
+    <Target Name="RTK_DeprecationWarning">
+        <Warning Text="Raid.Toolkit.Extensibility.Tasks is deprecated. Add a reference to Raid.Toolkit.Build.Tasks" />
+    </Target>
+</Project>

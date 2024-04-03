@@ -41,6 +41,12 @@
       }
     },
     {
+      "name": "Attach to ExtensionHost",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${input:MatchExtensionHost}",
+    },
+    {
       "name": "Build Task",
       "type": "coreclr",
       "request": "launch",
@@ -53,8 +59,7 @@
         "-v",
         "normal",
         "-m:1",
-        "-nodeReuse:false",
-        "-p:RTKTasks=true"
+        "-nodeReuse:false"
       ],
       "targetOutputLogPath": "${workspaceFolder}/output.log",
       "cwd": "${workspaceFolder}/src/Extensions/Account",
@@ -70,40 +75,95 @@
       "console": "integratedTerminal"
     },
     {
-      "name": "Launch Prebuild",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/SDK/Model.PreBuild/bin/Debug/net5.0/Model.PreBuild.exe",
-      "args": [
-        "${workspaceFolder}\\bin"
-      ],
-      "env": {
-        "FORCE": "true",
-        "RTK_DEBUG": "true",
-        "app:MemoryLogging": "Error"
-      },
-      "justMyCode": false,
-      "cwd": "${workspaceFolder}/SDK/Model.PreBuild",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
       "name": "Launch Raid.Toolkit",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64/Raid.Toolkit.exe",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.exe",
       "args": [
         "--debug",
-        "--standalone"
+        "--standalone",
       ],
       "env": {
         "RTK_DEBUG": "true",
         "app:MemoryLogging": "Error"
       },
       "justMyCode": false,
-      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64",
+      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Launch Raid.Toolkit --dbg-break",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.exe",
+      "args": [
+        "--debug",
+        "--standalone",
+        "--dbg-break"
+      ],
+      "env": {
+        "RTK_DEBUG": "true",
+        "app:MemoryLogging": "Error"
+      },
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Launch Raid.Toolkit.ExtensionHost TestExtension",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit.ExtensionHost/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.ExtensionHost.exe",
+      "args": [
+        "run",
+        "TestExtension",
+        "--debug",
+        "--standalone",
+        "--quiet",
+      ],
+      "env": {
+        "RTK_DEBUG": "true",
+        "app:MemoryLogging": "Error"
+      },
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Launch Raid.Toolkit.ExtensionHost Account Extension",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit.ExtensionHost/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.ExtensionHost.exe",
+      "args": [
+        "run",
+        "Raid.Toolkit.Extension.Account",
+        "--debug",
+        "--standalone",
+        "--quiet",
+      ],
+      "env": {
+        "RTK_DEBUG": "true",
+        "app:MemoryLogging": "Error"
+      },
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Debug Installed Version",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${env:UserProfile}/AppData/Local/RaidToolkit/Raid.Toolkit.exe",
+      "justMyCode": false,
+      "cwd": "${env:UserProfile}/AppData/Local/RaidToolkit/",
       "console": "internalConsole",
       "stopAtEntry": false
     },
@@ -112,63 +172,20 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64/Raid.Toolkit.exe",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit.ExtensionHost/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.ExtensionHost.exe",
       "args": [
+        "run",
+        "--standalone",
         "--debug",
-        // "--debug-package",
-        // "M:\\git\\RaidSpeedHack\\RaidSpeedHack\\x64\\bin\\x64\\Debug\\net5.0-windows",
-        // "--standalone"
+        "--debug-package",
+        "${workspaceFolder}\\src\\Tests\\TestExtension\\bin\\x64\\Debug\\net6.0-windows10.0.19041.0\\win10-x64",
       ],
       "env": {
         "RTK_DEBUG": "true",
         "app:MemoryLogging": "Error"
       },
       "justMyCode": false,
-      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": "Launch Raid.Toolkit (Release)",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build release",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Release/net5.0-windows/win-x64/Raid.Toolkit.exe",
-      "args": [],
-      "env": {
-        "RTK_DEBUG": "true",
-        "app:MemoryLogging": "Error"
-      },
-      "justMyCode": false,
-      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": "Launch Installer",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64/Raid.Toolkit.exe",
-      "args": [],
-      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit",
-      "console": "internalConsole",
-      "stopAtEntry": false
-    },
-    {
-      "name": "Launch Raid.Toolkit (Protocol)",
-      "type": "coreclr",
-      "request": "launch",
-      "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64/Raid.Toolkit.exe",
-      "args": [
-        "open",
-        "rtk://open?channel=CNTvMrQnRF3li0hGX2Apj&origin=chrome-extension://omalebghpgejjiaoknljcfmglgbpocdp"
-      ],
-      "env": {
-        "RTK_DEBUG": "true"
-      },
-      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit",
+      "cwd": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64",
       "console": "internalConsole",
       "stopAtEntry": false
     },
@@ -177,7 +194,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net5.0-windows/win-x64/Raid.Toolkit.exe",
+      "program": "${workspaceFolder}/src/Application/Raid.Toolkit/bin/x64/Debug/net6.0-windows10.0.19041.0/win10-x64/Raid.Toolkit.exe",
       "args": [
         "open"
       ],
@@ -201,6 +218,15 @@
       "command": "pick-process-ex.match",
       "args": {
         "program": "Raid.exe",
+        "select": "auto"
+      }
+    },
+    {
+      "id": "MatchExtensionHost",
+      "type": "command",
+      "command": "pick-process-ex.match",
+      "args": {
+        "program": "Raid.Toolkit.ExtensionHost.exe",
         "select": "auto"
       }
     }
